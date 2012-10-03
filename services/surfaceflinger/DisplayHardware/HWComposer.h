@@ -82,6 +82,11 @@ public:
 
     // Events handling ---------------------------------------------------------
 
+#ifdef ALLWINNEr
+    int setParameter(uint32_t cmd,uint32_t value);
+    uint32_t getParameter(uint32_t cmd);
+#endif
+
     enum {
         EVENT_VSYNC = HWC_EVENT_VSYNC
     };
