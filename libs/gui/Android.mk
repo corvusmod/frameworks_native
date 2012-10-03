@@ -27,7 +27,7 @@ LOCAL_SRC_FILES:= \
 	SurfaceComposerClient.cpp \
 	DummyConsumer.cpp
 
-feq ($(TARGET_BOARD_PLATFORM),exDroid)
+ifeq ($(TARGET_BOARD_PLATFORM),exDroid)
 LOCAL_SRC_FILES:= \
 	ISurfaceClient.cpp 
 endif

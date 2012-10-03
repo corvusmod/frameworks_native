@@ -19,12 +19,12 @@ LOCAL_SRC_FILES:= \
     MessageQueue.cpp                        \
     SurfaceFlinger.cpp                      \
     SurfaceTextureLayer.cpp                 \
-    Transform.cpp                           \
+    Transform.cpp                           
 
 ifeq ($(TARGET_BOARD_PLATFORM),exDroid)
 LOCAL_SRC_FILES:= \
     DisplayHardware/DisplayDispatcher.cpp   \
-    DisplayHardware/DisplaySemaphore.cpp   \
+    DisplayHardware/DisplaySemaphore.cpp   
 endif
 
 LOCAL_CFLAGS:= -DLOG_TAG=\"SurfaceFlinger\"
