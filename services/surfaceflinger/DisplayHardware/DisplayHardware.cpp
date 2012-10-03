@@ -99,13 +99,10 @@ DisplayHardware::DisplayHardware(
     : DisplayHardwareBase(flinger, dpy),
       mFlinger(flinger), mFlags(0), mHwc(0)
 {
-#ifdef ALLWINNER
-    char property[PROPERTY_VALUE_MAX];
-#endif
     init(dpy);
 #ifdef ALLWINNER
     mDisplayDispatcher  = NULL;
-    mDisplayDispatcher = new DisplayDispatcher(mFlinger);
+    mDisplayDispatcher = new DisplayDispatcher();
 #endif
 }
 

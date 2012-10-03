@@ -25,7 +25,7 @@
 #include <unistd.h>
 #include <limits.h>
 #include <ui/DisplayCommand.h>
-#include "DisplaySemaphore.h"
+#include <ui/DisplaySemaphore.h>
 
 namespace android 
 {

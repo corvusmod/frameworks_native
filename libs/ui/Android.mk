@@ -26,22 +26,14 @@ LOCAL_SRC_FILES:= \
 	GraphicBufferMapper.cpp \
 	PixelFormat.cpp \
 	Rect.cpp \
+	DisplayDispatcher.cpp \
+        DisplaySemaphore.cpp \
 	Region.cpp
 
-ifneq ($(TARGET_BOARD_PLATFORM),exDroid)
 LOCAL_SHARED_LIBRARIES := \
 	libcutils \
 	libutils \
 	libhardware
-endif
-
-ifeq ($(TARGET_BOARD_PLATFORM),exDroid)
-LOCAL_SHARED_LIBRARIES := \
-        libcutils \
-        libutils \
-	libhardware_legacy \
-        libhardware
-endif
 
 ifneq ($(BOARD_FRAMEBUFFER_FORCE_FORMAT),)
 LOCAL_CFLAGS += -DFRAMEBUFFER_FORCE_FORMAT=$(BOARD_FRAMEBUFFER_FORCE_FORMAT)

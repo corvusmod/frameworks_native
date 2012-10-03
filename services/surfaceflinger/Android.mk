@@ -21,12 +21,6 @@ LOCAL_SRC_FILES:= \
     SurfaceTextureLayer.cpp                 \
     Transform.cpp                           
 
-ifeq ($(TARGET_BOARD_PLATFORM),exDroid)
-LOCAL_SRC_FILES:= \
-    DisplayHardware/DisplayDispatcher.cpp   \
-    DisplayHardware/DisplaySemaphore.cpp   
-endif
-
 LOCAL_CFLAGS:= -DLOG_TAG=\"SurfaceFlinger\"
 LOCAL_CFLAGS += -DGL_GLEXT_PROTOTYPES -DEGL_EGLEXT_PROTOTYPES
 

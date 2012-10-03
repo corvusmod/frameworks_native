@@ -33,18 +33,17 @@ class Layer;
 // refactored
 class SurfaceTextureLayer : public BufferQueue
 {
-public:
 #ifdef ALLWINNER
-    SurfaceTextureLayer(const sp<Layer>& layer);
-#else
-    SurfaceTextureLayer();
+wp<Layer> mLayer;
+uint32_t mDefaultFormat;
 #endif
+public:
+    SurfaceTextureLayer();
     ~SurfaceTextureLayer();
 
 #ifdef ALLWINNER
     bool     usehwcomposer;
     bool     usehwinit;
-    wp<Layer>  mLayer;
 #endif
 
     virtual status_t connect(int api, QueueBufferOutput* output);

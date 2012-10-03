@@ -29,18 +29,9 @@ namespace android {
 // ---------------------------------------------------------------------------
 
 
-#ifdef ALLWINNER
-SurfaceTextureLayer::SurfaceTextureLayer(const sp<Layer>& layer)
-     : BufferQueue(true) {
-    usehwcomposer = false;
-    usehwinit     = false;
-    mLayer  = layer;
- }
-#else
 SurfaceTextureLayer::SurfaceTextureLayer()
     : BufferQueue(true) {
 }
-#endif
 SurfaceTextureLayer::~SurfaceTextureLayer() {
 }
 
@@ -93,8 +84,7 @@ status_t SurfaceTextureLayer::disconnect(int api)
             usehwinit     = false;
             if (layer != NULL) 
             {
-                Rect Crop(0,0,0,0);
-                layer->setTextureInfo(Crop, 0);
+                layer->setTextureInfo(0,0,0);
             }
         }
         default:
@@ -120,11 +110,7 @@ int SurfaceTextureLayer::setParameter(uint32_t cmd,uint32_t value)
 
             if(IsHardwareRenderSupport())
             {
-                //const Rect Crop(SurfaceTexture::getCurrentCrop());
-                const Rect Crop(0,0,layer_info->w,layer_info->h);
-                
-            layer->setTextureInfo(Crop,layer_info->format);
-
+		layer->setTextureInfo(layer_info->w,layer_info->h,layer_info->format);
                 usehwinit = true;
             }
       }
@@ -143,10 +129,6 @@ uint32_t SurfaceTextureLayer::getParameter(uint32_t cmd)
 {
     uint32_t res = 0;
     
-  if(cmd == NATIVE_WINDOW_CMD_GET_SURFACE_TEXTURE_TYPE) {
-    return 1;
-  }
-
     sp<Layer> layer(mLayer.promote());
     if (layer != NULL) 
     {

@@ -31,9 +31,6 @@
 #include <gui/ISurfaceTexture.h>
 
 #include <private/gui/LayerState.h>
-#ifdef ALLWINNER
-#include <gui/ISurfaceClient.h>
-#endif
 
 #include <ui/DisplayInfo.h>
 
@@ -123,6 +120,31 @@ public:
         return reply.readInt32();
     }
 
+#ifdef ALLWINNER
+virtual int  setDisplayProp(int cmd,int param0,int param1,int param2)
+    {
+        Parcel data, reply;
+        data.writeInterfaceToken(ISurfaceComposer::getInterfaceDescriptor());
+        data.writeInt32(cmd);
+        data.writeInt32(param0);
+        data.writeInt32(param1);
+        data.writeInt32(param2);
+        remote()->transact(BnSurfaceComposer::SET_DISPLAYPROP, data, &reply);
+        return reply.readInt32();
+    }
+    
+    virtual int  getDisplayProp(int cmd,int param0,int param1)
+    {
+        Parcel data, reply;
+        data.writeInterfaceToken(ISurfaceComposer::getInterfaceDescriptor());
+        data.writeInt32(cmd);
+        data.writeInt32(param0);
+        data.writeInt32(param1);
+        remote()->transact(BnSurfaceComposer::GET_DISPLAYPROP, data, &reply);
+        return reply.readInt32();
+    }
+#endif
+
     virtual status_t turnElectronBeamOff(int32_t mode)
     {
         Parcel data, reply;
@@ -197,38 +219,6 @@ public:
         return result;
     }
 
-#ifdef ALLWINNER
-virtual int  setDisplayProp(int cmd,int param0,int param1,int param2)
-    {
-        Parcel data, reply;
-        data.writeInterfaceToken(ISurfaceComposer::getInterfaceDescriptor());
-        data.writeInt32(cmd);
-        data.writeInt32(param0);
-        data.writeInt32(param1);
-        data.writeInt32(param2);
-        remote()->transact(BnSurfaceComposer::SET_DISPLAYPROP, data, &reply);
-        return reply.readInt32();
-    }
-    
-    virtual int  getDisplayProp(int cmd,int param0,int param1)
-    {
-        Parcel data, reply;
-        data.writeInterfaceToken(ISurfaceComposer::getInterfaceDescriptor());
-        data.writeInt32(cmd);
-        data.writeInt32(param0);
-        data.writeInt32(param1);
-        remote()->transact(BnSurfaceComposer::GET_DISPLAYPROP, data, &reply);
-        return reply.readInt32();
-    }
-
-    virtual void  registerClient(const sp<ISurfaceClient>& client)
-    {
-        Parcel data, reply;
-        data.writeInterfaceToken(ISurfaceComposer::getInterfaceDescriptor());
-        data.writeStrongBinder(client->asBinder());
-        remote()->transact(BnSurfaceComposer::REGISTER_CLIENT, data, &reply);
-    }
-#endif
 };
 
 IMPLEMENT_META_INTERFACE(SurfaceComposer, "android.ui.ISurfaceComposer");

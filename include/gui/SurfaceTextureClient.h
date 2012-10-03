@@ -107,6 +107,10 @@ protected:
 #endif
 
     virtual int connect(int api);
+#ifdef ALLWINNER
+    virtual int setParameter(uint32_t cmd,uint32_t value);
+    virtual int getParameter(uint32_t cmd);
+#endif
     virtual int disconnect(int api);
     virtual int setBufferCount(int bufferCount);
     virtual int setBuffersDimensions(int w, int h);
@@ -119,10 +123,6 @@ protected:
     virtual int setUsage(uint32_t reqUsage);
     virtual int lock(ANativeWindow_Buffer* outBuffer, ARect* inOutDirtyBounds);
     virtual int unlockAndPost();
-#ifdef ALLWINNER
-    virtual int setParameter(uint32_t cmd,uint32_t value);
-    virtual int getParameter(uint32_t cmd);
-#endif
 
     enum { NUM_BUFFER_SLOTS = BufferQueue::NUM_BUFFER_SLOTS };
     enum { DEFAULT_FORMAT = PIXEL_FORMAT_RGBA_8888 };

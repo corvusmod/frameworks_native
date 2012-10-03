@@ -82,7 +82,7 @@ public:
 
     // Events handling ---------------------------------------------------------
 
-#ifdef ALLWINNEr
+#ifdef ALLWINNER
     int setParameter(uint32_t cmd,uint32_t value);
     uint32_t getParameter(uint32_t cmd);
 #endif
