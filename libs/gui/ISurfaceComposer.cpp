@@ -330,15 +330,6 @@ status_t BnSurfaceComposer::onTransact(
         }
             break;
 
-        case REGISTER_CLIENT:
-        {
-            CHECK_INTERFACE(ISurfaceComposer, data, reply);
-            sp<ISurfaceClient> client = interface_cast<ISurfaceClient>(data.readStrongBinder());
-            registerClient(client);
-            return NO_ERROR;
-        }
-            break;
-
 #endif
 
         default:
