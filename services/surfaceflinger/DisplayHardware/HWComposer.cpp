@@ -172,9 +172,15 @@ status_t HWComposer::prepare() const {
         size_t count = mList->numHwLayers;
         for (size_t i=0 ; i<count ; i++) {
             hwc_layer& l(mList->hwLayers[i]);
+#ifdef ALLWINNER
+            //if (l.flags & HWC_SKIP_LAYER) {
+            //    l.compositionType = HWC_FRAMEBUFFER;
+            //}
+#else
             if (l.flags & HWC_SKIP_LAYER) {
                 l.compositionType = HWC_FRAMEBUFFER;
             }
+#endif
             switch (l.compositionType) {
                 case HWC_OVERLAY:
                     numOVLayers++;

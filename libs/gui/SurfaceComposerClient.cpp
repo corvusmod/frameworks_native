@@ -40,6 +40,10 @@
 #include <private/gui/LayerState.h>
 #include <private/gui/SharedBufferStack.h>
 
+#ifdef ALLWINNER
+#include <gui/ISurfaceClient.h>
+#endif
+
 namespace android {
 // ---------------------------------------------------------------------------
 
@@ -570,6 +574,18 @@ int  SurfaceComposerClient::getDisplayProp(int cmd,int param0,int param1)
     return s->getDisplayProp(cmd,param0,param1);
 }
 
+void  SurfaceComposerClient::registerSurfaceClient(const sp<ISurfaceClient>& client)
+{
+    sp<ISurfaceComposer> s(ComposerService::getComposerService());
+    if (s == NULL) 
+    {
+    	ALOGD("get ISurfaceComposer failed!\n");
+    	
+    	return ;
+    }
+
+    return s->registerClient(client);
+}
 #endif
 
 // ----------------------------------------------------------------------------

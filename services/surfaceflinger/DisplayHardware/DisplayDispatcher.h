@@ -33,6 +33,9 @@
 #include <stddef.h>
 #include <unistd.h>
 #include <limits.h>
+#include <ui/DisplayCommand.h>
+#include "DisplaySemaphore.h"
+>>>>>>> parent of 9643951... Come back to old surfaceflinger patches:services/surfaceflinger/DisplayHardware/DisplayDispatcher.h
 
 #define   DISPLAYDISPATCH_MAXBUFNO      3
 

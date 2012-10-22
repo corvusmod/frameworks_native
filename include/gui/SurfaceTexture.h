@@ -271,6 +271,9 @@ private:
     // current slot's fence to guard against a producer accessing the buffer
     // before the outstanding accesses have completed.
     status_t syncForReleaseLocked(EGLDisplay dpy);
+#ifdef ALLWINNER
+    virtual status_t setCrop(const Rect& reg);
+#endif
 
     // The default consumer usage flags that SurfaceTexture always sets on its
     // BufferQueue instance; these will be OR:d with any additional flags passed
@@ -330,6 +333,10 @@ private:
     // around a GL driver limitation on the number of FBO attachments, which the
     // browser's tile cache exceeds.
     const GLenum mTexTarget;
+
+#ifdef ALLWINNER
+    bool  mTransformExternal;
+#endif
 
     // EGLSlot contains the information and object references that
     // SurfaceTexture maintains about a BufferQueue buffer slot.

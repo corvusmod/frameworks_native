@@ -73,6 +73,12 @@ Layer::Layer(SurfaceFlinger* flinger,
 {
     mCurrentCrop.makeInvalid();
     glGenTextures(1, &mTextureName);
+#ifdef ALLWINNER
+    texture_srcw   = 0;
+    texture_srch   = 0;
+    texture_format   = 0;
+#endif
+
 }
 
 void Layer::onLayerDisplayed() {
@@ -103,7 +109,11 @@ void Layer::onFirstRef()
     };
 
     // Creates a custom BufferQueue for SurfaceTexture to use
+#ifdef ALLWINNER
+    sp<BufferQueue> bq = new SurfaceTextureLayer(this);
+#else
     sp<BufferQueue> bq = new SurfaceTextureLayer();
+#endif
     mSurfaceTexture = new SurfaceTexture(mTextureName, true,
             GL_TEXTURE_EXTERNAL_OES, false, bq);
 
@@ -176,13 +186,13 @@ wp<IBinder> Layer::getSurfaceTextureBinder() const
     return mSurfaceTexture->getBufferQueue()->asBinder();
 }
 
-#ifdef ALLWINNER
-void Layer::setTextureInfo(int w,int h,int format)
+#ifdef ALLWINNEr
+void Layer::setTextureInfo(Rect Crop,int format)
 {
-    texture_srcw   = w;
-    texture_srch   = h;
+    texture_srcw   = Crop.width();
+    texture_srch   = Crop.height();
     texture_format   = format;
-    mCurrentCrop    = Rect(w,h);
+    mCurrentCrop    = Crop;
 }
 #endif
 
@@ -338,15 +348,22 @@ void Layer::setPerFrameData(hwc_layer_t* hwcl) {
     } else {
         hwcl->handle = buffer->handle;
     }
-#ifdef ALLWINNER
+#ifdef ALLWINNEr
     hwcl->format = texture_format;
-    ALOGV("hwcl->format = %d\n",texture_format);
 #endif
 }
 
 void Layer::onDraw(const Region& clip) const
 {
     ATRACE_CALL();
+#ifdef ALLWINNER
+    if(texture_format)
+    {
+        clearWithOpenGL(clip,0,0,0,0);
+    }
+    else
+    {
+#endif
 
     if (CC_UNLIKELY(mActiveBuffer == 0)) {
         // the texture has not been created yet, this Layer has
@@ -416,6 +433,9 @@ void Layer::onDraw(const Region& clip) const
 
     glDisable(GL_TEXTURE_EXTERNAL_OES);
     glDisable(GL_TEXTURE_2D);
+#ifdef ALLWINNER
+}
+#endif
 }
 
 // As documented in libhardware header, formats in the range
@@ -554,6 +574,30 @@ void Layer::lockPageFlip(bool& recomputeVisibleRegions)
 {
     ATRACE_CALL();
 
+#ifdef ALLWINNER
+    if (mQueuedFrames > 0 || texture_format != 0) 
+    {
+    // Capture the old state of the layer for comparisons later
+       const bool oldOpacity = isOpaque();
+       sp<GraphicBuffer> oldActiveBuffer = mActiveBuffer;
+        if(texture_format == 0)
+        {
+            // if we've already called updateTexImage() without going through
+            // a composition step, we have to skip this layer at this point
+            // because we cannot call updateTeximage() without a corresponding
+            // compositionComplete() call.
+            // we'll trigger an update in onPreComposition().
+            if (mRefreshPending) {
+                mPostedDirtyRegion.clear();
+                return;
+            }
+            
+            // signal another event if we have more frames pending
+            if (android_atomic_dec(&mQueuedFrames) > 1) {
+                mFlinger->signalLayerUpdate();
+            }
+#else
+
     if (mQueuedFrames > 0) {
 
         // if we've already called updateTexImage() without going through
@@ -574,6 +618,7 @@ void Layer::lockPageFlip(bool& recomputeVisibleRegions)
         if (android_atomic_dec(&mQueuedFrames) > 1) {
             mFlinger->signalLayerUpdate();
         }
+#endif
 
         struct Reject : public SurfaceTexture::BufferRejecter {
             Layer::State& front;
@@ -692,6 +737,84 @@ void Layer::lockPageFlip(bool& recomputeVisibleRegions)
             mCurrentScalingMode = scalingMode;
             mFlinger->invalidateHwcGeometry();
         }
+#ifdef ALLWINNER
+if(texture_format == 0)
+        {
+            if (oldActiveBuffer != NULL) {
+                uint32_t bufWidth  = mActiveBuffer->getWidth();
+                uint32_t bufHeight = mActiveBuffer->getHeight();
+                if (bufWidth != uint32_t(oldActiveBuffer->width) ||
+                    bufHeight != uint32_t(oldActiveBuffer->height)) {
+                    mFlinger->invalidateHwcGeometry();
+                }
+            }
+
+            mCurrentOpacity = getOpacityForFormat(mActiveBuffer->format);
+            if (oldOpacity != isOpaque())
+            {
+                recomputeVisibleRegions = true;
+            }
+
+            // FIXME: mPostedDirtyRegion = dirty & bounds
+            const Layer::State& front(drawingState());
+            mPostedDirtyRegion.set(front.active.w, front.active.h);
+
+            glTexParameterx(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameterx(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        }
+        else
+        {
+            uint32_t bufWidth  = texture_srcw;
+            uint32_t bufHeight = texture_srch;
+            if (bufWidth != uint32_t(oldtexture_srcw) ||
+                bufHeight != uint32_t(oldtexture_srch))
+            {
+                mFlinger->invalidateHwcGeometry();
+            }
+
+            // update the layer size and release freeze-lock
+            const Layer::State& front(drawingState());
+
+            // FIXME: mPostedDirtyRegion = dirty & bounds
+            mPostedDirtyRegion.set(front.active.w, front.active.h);
+
+            if ((front.active.w != front.requested.w) ||
+                (front.active.h != front.requested.h))
+            {
+                // check that we received a buffer of the right size
+                // (Take the buffer's orientation into account)
+                if (mCurrentTransform & Transform::ROT_90) {
+                    swap(bufWidth, bufHeight);
+                }
+
+                if (isFixedSize() ||
+                        (bufWidth == front.requested.w &&
+                        bufHeight == front.requested.h))
+                {
+                    // Here we pretend the transaction happened by updating the
+                    // current and drawing states. Drawing state is only accessed
+                    // in this thread, no need to have it locked
+                    Layer::State& editDraw(mDrawingState);
+                    editDraw.active = editDraw.requested;
+                    editDraw.active = editDraw.requested;
+
+                    // We also need to update the current state so that we don't
+                    // end-up doing too much work during the next transaction.
+                    // NOTE: We actually don't need hold the transaction lock here
+                    // because State::w and State::h are only accessed from
+                    // this thread
+                    Layer::State& editTemp(currentState());
+                    editTemp.active = editDraw.active;
+                    editTemp.active = editDraw.active;
+                    // recompute visible region
+                    recomputeVisibleRegions = true;
+                }
+            }
+        }
+        
+    }
+}
+#else
 
         if (oldActiveBuffer != NULL) {
             uint32_t bufWidth  = mActiveBuffer->getWidth();
@@ -716,6 +839,7 @@ void Layer::lockPageFlip(bool& recomputeVisibleRegions)
     }
 }
 
+#endif
 
 void Layer::unlockPageFlip(
         const Transform& planeTransform, Region& outDirtyRegion)

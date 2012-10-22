@@ -50,6 +50,10 @@ enum {
 #ifdef ALLWINNER
     SET_PARAMETER,
     GET_PARAMETER,
+    SET_CROP,
+    SET_TRANSFORM,
+    SET_SCALINGMODE,
+    SET_TIMESTEAP,
 #endif
 };
 
@@ -217,12 +221,7 @@ virtual int setParameter(uint32_t cmd,uint32_t value)
         data.writeInt32(cmd);
         if(cmd == HWC_LAYER_SETINITPARA)
         {
-        	layerinitpara_t  *layer_info = (layerinitpara_t  *)value;
-		ALOGD("layer_info.w = %d\n",layer_info->w);
-	        ALOGD("layer_info.h = %d\n",layer_info->h);
-	        ALOGD("layer_info.format = %d\n",layer_info->format);
-	        ALOGD("layer_info.screenid = %d\n",layer_info->screenid);
-
+        	layerinitpara_t  *layer_info = (layerinitpara_t  *)value;	        	
         	data.write((void *)value,sizeof(layerinitpara_t));
         }
         else if(cmd == HWC_LAYER_SETFRAMEPARA)
@@ -259,6 +258,60 @@ virtual int setParameter(uint32_t cmd,uint32_t value)
         result = reply.readInt32();
         return result;
     }
+
+    virtual status_t setCrop(const Rect& reg) {
+        Parcel data, reply;
+        data.writeInterfaceToken(ISurfaceTexture::getInterfaceDescriptor());
+        data.writeFloat(reg.left);
+        data.writeFloat(reg.top);
+        data.writeFloat(reg.right);
+        data.writeFloat(reg.bottom);
+        status_t result = remote()->transact(SET_CROP, data, &reply);
+        if (result != NO_ERROR) {
+            return result;
+        }
+        result = reply.readInt32();
+        return result;
+    }
+
+    virtual status_t setCurrentTransform(uint32_t transfrom)
+    {
+        Parcel data, reply;
+        data.writeInterfaceToken(ISurfaceTexture::getInterfaceDescriptor());
+        data.writeInt32(transfrom);
+        status_t result =remote()->transact(SET_TRANSFORM, data, &reply);
+        if (result != NO_ERROR) {
+            return result;
+        }
+        result = reply.readInt32();
+        return result;
+    }
+
+    virtual status_t setCurrentScalingMode(int mode)
+    {
+        Parcel data, reply;
+        data.writeInterfaceToken(ISurfaceTexture::getInterfaceDescriptor());
+        data.writeInt32(mode);
+        status_t result =remote()->transact(SET_SCALINGMODE, data, &reply);
+        if (result != NO_ERROR) {
+            return result;
+        }
+        result = reply.readInt32();
+        return result;
+    }
+
+    virtual status_t setTimestamp(int64_t timestamp)
+    {
+        Parcel data, reply;
+        data.writeInterfaceToken(ISurfaceTexture::getInterfaceDescriptor());
+        data.writeInt64(timestamp);
+        status_t result =remote()->transact(SET_TIMESTEAP, data, &reply);
+        if (result != NO_ERROR) {
+            return result;
+        }
+        result = reply.readInt32();
+        return result;
+    }
 #endif
 };
 
@@ -290,6 +343,43 @@ status_t BnSurfaceTexture::onTransact(
             return NO_ERROR;
         } break;
 
+#ifdef ALLWINNER
+case SET_CROP: {
+            Rect reg;
+            CHECK_INTERFACE(ISurfaceTexture, data, reply);
+            reg.left = data.readFloat();
+            reg.top = data.readFloat();
+            reg.right = data.readFloat();
+            reg.bottom = data.readFloat();
+            status_t result = setCrop(reg);
+            reply->writeInt32(result);
+            return NO_ERROR;
+        } break;
+        case SET_TRANSFORM: {
+            uint32_t transform;
+            CHECK_INTERFACE(ISurfaceTexture, data, reply);
+            transform = data.readInt32();
+            status_t result = setCurrentTransform(transform);
+            reply->writeInt32(result);
+            return NO_ERROR;
+        } break;
+        case SET_SCALINGMODE: {
+            uint32_t scalingmode;
+            CHECK_INTERFACE(ISurfaceTexture, data, reply);
+            scalingmode = data.readInt32();
+            status_t result = setCurrentScalingMode(scalingmode);
+            reply->writeInt32(result);
+            return NO_ERROR;
+        } break;
+        case SET_TIMESTEAP: {
+            uint32_t timestamp;
+            CHECK_INTERFACE(ISurfaceTexture, data, reply);
+            timestamp = data.readInt64();
+            status_t result = setTimestamp(timestamp);
+            reply->writeInt32(result);
+            return NO_ERROR;
+        } break;
+#endif
         case DEQUEUE_BUFFER: {
             CHECK_INTERFACE(ISurfaceTexture, data, reply);
             uint32_t w      = data.readInt32();
@@ -386,10 +476,6 @@ status_t BnSurfaceTexture::onTransact(
 	        	data.read((void *)&layer_info,sizeof(layerinitpara_t));
 	        	
 	        	value = (uint32_t)&layer_info;
-			ALOGD("layer_info.w = %d\n",layer_info.w);
-            		ALOGD("layer_info.h = %d\n",layer_info.h);
-                        ALOGD("layer_info.format = %d\n",layer_info.format);
-		        ALOGD("layer_info.screenid = %d\n",layer_info.screenid);
 	        }
 	        else if(cmd == HWC_LAYER_SETFRAMEPARA)
 	        {

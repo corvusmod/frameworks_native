@@ -27,6 +27,11 @@ LOCAL_SRC_FILES:= \
 	SurfaceComposerClient.cpp \
 	DummyConsumer.cpp
 
+ifeq ($(TARGET_BOARD_PLATFORM),exDroid)
+LOCAL_SRC_FILES:= \
+	ISurfaceClient.cpp 
+endif
+
 LOCAL_SHARED_LIBRARIES := \
 	libcutils \
 	libutils \

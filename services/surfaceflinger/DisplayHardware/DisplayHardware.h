@@ -29,7 +29,8 @@
 
 #include "GLExtensions.h"
 #ifdef ALLWINNER
-#include <ui/DisplayDispatcher.h>
+#include "DisplayDispatcher.h"
+#include <ui/DisplayCommand.h>
 #endif
 
 
