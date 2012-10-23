@@ -29,9 +29,6 @@
 
 #include <gui/IGraphicBufferAlloc.h>
 #include <gui/ISurfaceComposerClient.h>
-#ifdef ALLWINNER
-#include <gui/ISurfaceClient.h>
-#endif
 
 namespace android {
 // ----------------------------------------------------------------------------
@@ -142,13 +139,6 @@ public:
 
     /* return an IDisplayEventConnection */
     virtual sp<IDisplayEventConnection> createDisplayEventConnection() = 0;
-
-#ifdef ALLWINNER
-    virtual int      setDisplayProp(int cmd,int param0,int param1,int param2) = 0;
-    virtual int      getDisplayProp(int cmd,int param0,int param1) = 0;
-    virtual void     registerClient(const sp<ISurfaceClient>& client) = 0;
-#endif
-
 };
 
 // ----------------------------------------------------------------------------
@@ -170,11 +160,6 @@ public:
         TURN_ELECTRON_BEAM_ON,
         AUTHENTICATE_SURFACE,
         CREATE_DISPLAY_EVENT_CONNECTION,
-#ifdef ALLWINNER
-	SET_DISPLAYPROP,
-        GET_DISPLAYPROP,
-        REGISTER_CLIENT,
-#endif
     };
 
     virtual status_t    onTransact( uint32_t code,

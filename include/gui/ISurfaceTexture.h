@@ -172,15 +172,6 @@ protected:
     // respectively.
     virtual status_t connect(int api, QueueBufferOutput* output) = 0;
 
-#ifdef ALLWINNER
-    virtual int      setParameter(uint32_t cmd,uint32_t value) = 0;
-    virtual uint32_t getParameter(uint32_t cmd) = 0;
-    virtual status_t setCrop(const Rect& reg) = 0;
-    virtual status_t setCurrentTransform(uint32_t transform) = 0;
-    virtual  status_t setCurrentScalingMode(int scalingMode) = 0;
-    virtual status_t setTimestamp(int64_t timestamp) = 0;
-#endif
-
     // disconnect attempts to disconnect a client API from the SurfaceTexture.
     // Calling this method will cause any subsequent calls to other
     // ISurfaceTexture methods to fail except for getAllocator and connect.

@@ -1,10 +1,6 @@
 LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
 
-ifeq ($(TARGET_BOARD_PLATFORM),exDroid)
-LOCAL_CFLAGS += -DALLWINNER 
-endif
-
 LOCAL_SRC_FILES:= \
 	BitTube.cpp \
 	BufferQueue.cpp \
@@ -26,11 +22,6 @@ LOCAL_SRC_FILES:= \
 	Surface.cpp \
 	SurfaceComposerClient.cpp \
 	DummyConsumer.cpp
-
-ifeq ($(TARGET_BOARD_PLATFORM),exDroid)
-LOCAL_SRC_FILES:= \
-	ISurfaceClient.cpp 
-endif
 
 LOCAL_SHARED_LIBRARIES := \
 	libcutils \

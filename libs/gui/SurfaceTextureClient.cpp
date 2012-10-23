@@ -33,10 +33,6 @@
 #include <gralloc_priv.h>
 #endif
 
-#ifdef ALLWINNER
-#include <hardware/hwcomposer.h>
-#endif
-
 namespace android {
 
 SurfaceTextureClient::SurfaceTextureClient(
@@ -376,16 +372,6 @@ int SurfaceTextureClient::perform(int operation, va_list args)
     case NATIVE_WINDOW_API_DISCONNECT:
         res = dispatchDisconnect(args);
         break;
-#ifdef ALLWINNER
-    case NATIVE_WINDOW_SETPARAMETER:
-        res = dispatchSetParameter(args);
-        break;
-
-    case NATIVE_WINDOW_GETPARAMETER:
-        res = dispatchGetParameter(args);
-        break;    
-#endif
-
     default:
         res = NAME_NOT_FOUND;
         break;
@@ -403,24 +389,6 @@ int SurfaceTextureClient::dispatchDisconnect(va_list args) {
     return disconnect(api);
 }
 
-#ifdef ALLWINNER
-int SurfaceTextureClient::dispatchSetParameter(va_list args)
-{
-    int cmd     = va_arg(args,int);
-    int value   = va_arg(args,int);
-
-    return setParameter((uint32_t)cmd,(uint32_t)value);
-}
-
-int SurfaceTextureClient::dispatchGetParameter(va_list args)
-{
-    int cmd = va_arg(args,int);
-
-    return getParameter((uint32_t)cmd);
-}
-
-#endif
-
 int SurfaceTextureClient::dispatchSetUsage(va_list args) {
     int usage = va_arg(args, int);
     return setUsage(usage);
@@ -437,9 +405,6 @@ int SurfaceTextureClient::dispatchSetBufferCount(va_list args) {
 }
 
 int SurfaceTextureClient::dispatchSetBuffersGeometry(va_list args) {
-#ifdef ALLWINNER
-    layerinitpara_t  layer_info;
-#endif
     int w = va_arg(args, int);
     int h = va_arg(args, int);
     int f = va_arg(args, int);
@@ -447,20 +412,7 @@ int SurfaceTextureClient::dispatchSetBuffersGeometry(va_list args) {
     if (err != 0) {
         return err;
     }
-#ifdef ALLWINNER
-    err = setBuffersFormat(f);
-    if (err != 0) 
-    {
-        return err;
-    }
-    
-    layer_info.w       = w;
-    layer_info.h       = h;
-    layer_info.format     = f;
-    return setParameter(HWC_LAYER_SETINITPARA,(uint32_t)&layer_info);
-#else
     return setBuffersFormat(f);
-#endif
 }
 
 int SurfaceTextureClient::dispatchSetBuffersDimensions(va_list args) {
@@ -559,23 +511,6 @@ int SurfaceTextureClient::disconnect(int api) {
     return err;
 }
 
-#ifdef ALLWINNER
-int SurfaceTextureClient::setParameter(uint32_t cmd,uint32_t value) 
-{
-    ALOGV("SurfaceTextureClient::setParameter %d,%d",cmd,value);
-    
-    return mSurfaceTexture->setParameter(cmd,value);
-}
-
-int SurfaceTextureClient::getParameter(uint32_t cmd) 
-{
-    ALOGV("SurfaceTextureClient::setParameter");
-    
-    return mSurfaceTexture->getParameter(cmd);
-}
-
-#endif
-
 int SurfaceTextureClient::setUsage(uint32_t reqUsage)
 {
     ALOGV("SurfaceTextureClient::setUsage");
@@ -620,10 +555,6 @@ int SurfaceTextureClient::setCrop(Rect const* rect)
 
     Mutex::Autolock lock(mMutex);
     mCrop = realRect;
-
-#ifdef ALLWINNER
-    status_t err = mSurfaceTexture->setCrop(*rect);
-#endif
     return NO_ERROR;
 }
 
@@ -658,10 +589,6 @@ int SurfaceTextureClient::setBuffersDimensions(int w, int h)
     Mutex::Autolock lock(mMutex);
     mReqWidth = w;
     mReqHeight = h;
-
-#ifdef ALLWINNER
-    status_t err = mSurfaceTexture->setCrop(Rect(w, h));
-#endif
     return NO_ERROR;
 }
 
@@ -742,10 +669,6 @@ int SurfaceTextureClient::setScalingMode(int mode)
 
     Mutex::Autolock lock(mMutex);
     mScalingMode = mode;
-
-#ifdef ALLWINNER
-    status_t err = mSurfaceTexture->setCurrentScalingMode(mode);
-#endif
     return NO_ERROR;
 }
 
@@ -755,10 +678,6 @@ int SurfaceTextureClient::setBuffersTransform(int transform)
     ALOGV("SurfaceTextureClient::setBuffersTransform");
     Mutex::Autolock lock(mMutex);
     mTransform = transform;
-
-#ifdef ALLWINNER
-    status_t err = mSurfaceTexture->setCurrentTransform(transform);
-#endif
     return NO_ERROR;
 }
 
@@ -767,9 +686,6 @@ int SurfaceTextureClient::setBuffersTimestamp(int64_t timestamp)
     ALOGV("SurfaceTextureClient::setBuffersTimestamp");
     Mutex::Autolock lock(mMutex);
     mTimestamp = timestamp;
-#ifdef ALLWINNER
-    status_t err = mSurfaceTexture->setTimestamp(timestamp);
-#endif
     return NO_ERROR;
 }
 

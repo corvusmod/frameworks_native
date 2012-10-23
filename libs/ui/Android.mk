@@ -15,10 +15,6 @@
 LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
 
-ifeq ($(TARGET_BOARD_PLATFORM),exDroid)
-LOCAL_CFLAGS += -DALLWINNER
-endif
-
 LOCAL_SRC_FILES:= \
 	FramebufferNativeWindow.cpp \
 	GraphicBuffer.cpp \
@@ -28,20 +24,10 @@ LOCAL_SRC_FILES:= \
 	Rect.cpp \
 	Region.cpp
 
-ifneq ($(TARGET_BOARD_PLATFORM),exDroid)
 LOCAL_SHARED_LIBRARIES := \
 	libcutils \
 	libutils \
 	libhardware
-endif
-
-ifeq ($(TARGET_BOARD_PLATFORM),exDroid)
-LOCAL_SHARED_LIBRARIES := \
-        libcutils \
-        libutils \
-	libhardware_legacy \
-        libhardware
-endif
 
 ifneq ($(BOARD_FRAMEBUFFER_FORCE_FORMAT),)
 LOCAL_CFLAGS += -DFRAMEBUFFER_FORCE_FORMAT=$(BOARD_FRAMEBUFFER_FORCE_FORMAT)
