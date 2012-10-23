@@ -287,7 +287,11 @@ protected:
 public:
     // called from class SurfaceFlinger
     virtual ~LayerBase();
-
+#ifdef ALLWINNER
+    int             mDispWidth;
+    int             mDispHeight;
+    void            setDispSize(int w,int h);
+#endif
 private:
     LayerBase(const LayerBase& rhs);
 };

@@ -73,6 +73,11 @@ Layer::Layer(SurfaceFlinger* flinger,
 {
     mCurrentCrop.makeInvalid();
     glGenTextures(1, &mTextureName);
+#ifdef ALLWINNER
+    texture_srcw   = 0;
+    texture_srch   = 0;
+    texture_format   = 0;
+#endif
 }
 
 void Layer::onLayerDisplayed() {
@@ -103,7 +108,11 @@ void Layer::onFirstRef()
     };
 
     // Creates a custom BufferQueue for SurfaceTexture to use
+#ifdef ALLWINNER
+    sp<BufferQueue> bq = new SurfaceTextureLayer(this);
+#else
     sp<BufferQueue> bq = new SurfaceTextureLayer();
+#endif
     mSurfaceTexture = new SurfaceTexture(mTextureName, true,
             GL_TEXTURE_EXTERNAL_OES, false, bq);
 
@@ -175,6 +184,16 @@ wp<IBinder> Layer::getSurfaceTextureBinder() const
 {
     return mSurfaceTexture->getBufferQueue()->asBinder();
 }
+
+#ifdef ALLWINNER
+void Layer::setTextureInfo(Rect Crop,int format)
+{
+    texture_srcw   = Crop.width();
+    texture_srch   = Crop.height();
+    texture_format   = format;
+    mCurrentCrop    = Crop;
+}
+#endif
 
 status_t Layer::setBuffers( uint32_t w, uint32_t h,
                             PixelFormat format, uint32_t flags)
@@ -329,11 +348,20 @@ void Layer::setPerFrameData(hwc_layer_t* hwcl) {
         hwcl->handle = buffer->handle;
     }
 }
-
+#ifdef ALLWINNER
+hwcl->format = texture_format;
+#endif
 void Layer::onDraw(const Region& clip) const
 {
     ATRACE_CALL();
 
+#ifdef ALLWINNER
+    if(texture_format)
+    {
+        clearWithOpenGL(clip,0,0,0,0);
+    }
+    else
+    {
     if (CC_UNLIKELY(mActiveBuffer == 0)) {
         // the texture has not been created yet, this Layer has
         // in fact never been drawn into. This happens frequently with
@@ -403,6 +431,78 @@ void Layer::onDraw(const Region& clip) const
     glDisable(GL_TEXTURE_EXTERNAL_OES);
     glDisable(GL_TEXTURE_2D);
 }
+}
+#else
+    if (CC_UNLIKELY(mActiveBuffer == 0)) {
+        // the texture has not been created yet, this Layer has
+        // in fact never been drawn into. This happens frequently with
+        // SurfaceView because the WindowManager can't know when the client
+        // has drawn the first time.
+
+        // If there is nothing under us, we paint the screen in black, otherwise
+        // we just skip this update.
+
+        // figure out if there is something below us
+        Region under;
+        const SurfaceFlinger::LayerVector& drawingLayers(
+                mFlinger->mDrawingState.layersSortedByZ);
+        const size_t count = drawingLayers.size();
+        for (size_t i=0 ; i<count ; ++i) {
+            const sp<LayerBase>& layer(drawingLayers[i]);
+            if (layer.get() == static_cast<LayerBase const*>(this))
+                break;
+            under.orSelf(layer->visibleRegionScreen);
+        }
+        // if not everything below us is covered, we plug the holes!
+        Region holes(clip.subtract(under));
+        if (!holes.isEmpty()) {
+            clearWithOpenGL(holes, 0, 0, 0, 1);
+        }
+        return;
+    }
+#ifdef QCOM_HARDWARE
+    if (!qdutils::isGPUSupportedFormat(mActiveBuffer->format)) {
+        clearWithOpenGL(clip, 0, 0, 0, 1);
+        return;
+    }
+#endif
+    if (!isProtected()) {
+        // TODO: we could be more subtle with isFixedSize()
+        const bool useFiltering = getFiltering() || needsFiltering() || isFixedSize();
+
+        // Query the texture matrix given our current filtering mode.
+        float textureMatrix[16];
+        mSurfaceTexture->setFilteringEnabled(useFiltering);
+        mSurfaceTexture->getTransformMatrix(textureMatrix);
+
+        // Set things up for texturing.
+        glBindTexture(GL_TEXTURE_EXTERNAL_OES, mTextureName);
+        GLenum filter = GL_NEAREST;
+        if (useFiltering) {
+            filter = GL_LINEAR;
+        }
+        glTexParameterx(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, filter);
+        glTexParameterx(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, filter);
+        glMatrixMode(GL_TEXTURE);
+        glLoadMatrixf(textureMatrix);
+        glMatrixMode(GL_MODELVIEW);
+        glDisable(GL_TEXTURE_2D);
+        glEnable(GL_TEXTURE_EXTERNAL_OES);
+    } else {
+        glBindTexture(GL_TEXTURE_2D, mFlinger->getProtectedTexName());
+        glMatrixMode(GL_TEXTURE);
+        glLoadIdentity();
+        glMatrixMode(GL_MODELVIEW);
+        glDisable(GL_TEXTURE_EXTERNAL_OES);
+        glEnable(GL_TEXTURE_2D);
+    }
+
+    drawWithOpenGL(clip);
+
+    glDisable(GL_TEXTURE_EXTERNAL_OES);
+    glDisable(GL_TEXTURE_2D);
+}
+#endif
 
 // As documented in libhardware header, formats in the range
 // 0x100 - 0x1FF are specific to the HAL implementation, and
@@ -539,8 +639,18 @@ bool Layer::onPreComposition() {
 void Layer::lockPageFlip(bool& recomputeVisibleRegions)
 {
     ATRACE_CALL();
-
+#ifdef ALLWINNER
+    if (mQueuedFrames > 0 || texture_format != 0) 
+    {
+    // Capture the old state of the layer for comparisons later
+       const bool oldOpacity = isOpaque();
+       sp<GraphicBuffer> oldActiveBuffer = mActiveBuffer;
+        if(texture_format == 0)
+        {
+#else
     if (mQueuedFrames > 0) {
+#endif
+
 
         // if we've already called updateTexImage() without going through
         // a composition step, we have to skip this layer at this point
@@ -666,6 +776,9 @@ void Layer::lockPageFlip(bool& recomputeVisibleRegions)
              // geometry invalidation.
              mFlinger->invalidateHwcGeometry();
          }
+#ifdef ALLWINNER
+}
+#endif
 
         Rect crop(mSurfaceTexture->getCurrentCrop());
         const uint32_t transform(mSurfaceTexture->getCurrentTransform());
@@ -679,7 +792,10 @@ void Layer::lockPageFlip(bool& recomputeVisibleRegions)
             mCurrentScalingMode = scalingMode;
             mFlinger->invalidateHwcGeometry();
         }
-
+#ifdef ALLWINNER
+        if(texture_format == 0)
+        {
+#endif
         if (oldActiveBuffer != NULL) {
             uint32_t bufWidth  = mActiveBuffer->getWidth();
             uint32_t bufHeight = mActiveBuffer->getHeight();
@@ -701,6 +817,59 @@ void Layer::lockPageFlip(bool& recomputeVisibleRegions)
         glTexParameterx(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameterx(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     }
+#ifdef ALLWINNER
+        else
+        {
+            uint32_t bufWidth  = texture_srcw;
+            uint32_t bufHeight = texture_srch;
+            if (bufWidth != uint32_t(oldtexture_srcw) ||
+                bufHeight != uint32_t(oldtexture_srch))
+            {
+                mFlinger->invalidateHwcGeometry();
+            }
+
+            // update the layer size and release freeze-lock
+            const Layer::State& front(drawingState());
+
+            // FIXME: mPostedDirtyRegion = dirty & bounds
+            mPostedDirtyRegion.set(front.active.w, front.active.h);
+
+            if ((front.active.w != front.requested.w) ||
+                (front.active.h != front.requested.h))
+            {
+                // check that we received a buffer of the right size
+                // (Take the buffer's orientation into account)
+                if (mCurrentTransform & Transform::ROT_90) {
+                    swap(bufWidth, bufHeight);
+                }
+
+                if (isFixedSize() ||
+                        (bufWidth == front.requested.w &&
+                        bufHeight == front.requested.h))
+                {
+                    // Here we pretend the transaction happened by updating the
+                    // current and drawing states. Drawing state is only accessed
+                    // in this thread, no need to have it locked
+                    Layer::State& editDraw(mDrawingState);
+                    editDraw.active = editDraw.requested;
+                    editDraw.active = editDraw.requested;
+
+                    // We also need to update the current state so that we don't
+                    // end-up doing too much work during the next transaction.
+                    // NOTE: We actually don't need hold the transaction lock here
+                    // because State::w and State::h are only accessed from
+                    // this thread
+                    Layer::State& editTemp(currentState());
+                    editTemp.active = editDraw.active;
+                    editTemp.active = editDraw.active;
+                    // recompute visible region
+                    recomputeVisibleRegions = true;
+                }
+            }
+        }
+        
+    }
+#endif
 }
 
 void Layer::unlockPageFlip(
@@ -790,6 +959,18 @@ uint32_t Layer::getEffectiveUsage(uint32_t usage) const
     usage |= GraphicBuffer::USAGE_HW_COMPOSER;
     return usage;
 }
+
+#ifdef ALLWINNER
+int Layer::setDisplayParameter(uint32_t cmd,uint32_t  value)
+{
+    return mFlinger->setDisplayParameter(cmd,value);
+}
+
+uint32_t Layer::getDisplayParameter(uint32_t cmd)
+{
+    return mFlinger->getDisplayParameter(cmd);
+}
+#endif
 
 uint32_t Layer::getTransformHint() const {
     uint32_t orientation = 0;

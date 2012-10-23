@@ -123,6 +123,9 @@ SurfaceTexture::SurfaceTexture(GLuint tex, bool allowSynchronousMode,
     mEglDisplay(EGL_NO_DISPLAY),
     mEglContext(EGL_NO_CONTEXT),
     mAbandoned(false),
+#ifdef ALLWINNER
+    mTransformExternal(true),
+#endif
     mCurrentTexture(BufferQueue::INVALID_BUFFER_SLOT),
     mAttached(true)
 {
@@ -327,6 +330,9 @@ status_t SurfaceTexture::updateTexImage(BufferRejecter* rejecter) {
         mCurrentTransform = item.mTransform;
         mCurrentScalingMode = item.mScalingMode;
         mCurrentTimestamp = item.mTimestamp;
+#ifdef ALLWINNER
+        mTransformExternal  = false;
+#endif
         computeCurrentTransformMatrix();
     } else  {
         if (err < 0) {
@@ -640,7 +646,18 @@ void SurfaceTexture::computeCurrentTransformMatrix() {
 nsecs_t SurfaceTexture::getTimestamp() {
     ST_LOGV("getTimestamp");
     Mutex::Autolock lock(mMutex);
+#ifdef ALLWINNER
+    if(mTransformExternal == false)
+    {
+        return mCurrentTimestamp;
+    }
+    else
+    {
+        return mBufferQueue->getTimestamp();//todo
+    }
+#else
     return mCurrentTimestamp;
+#endif
 }
 
 void SurfaceTexture::setFrameAvailableListener(
@@ -675,6 +692,10 @@ Rect SurfaceTexture::getCurrentCrop() const {
     Mutex::Autolock lock(mMutex);
 
     Rect outCrop = mCurrentCrop;
+#ifdef ALLWINNER
+    if(mTransformExternal == false)
+    {
+        outCrop = mCurrentCrop;
     if (mCurrentScalingMode == NATIVE_WINDOW_SCALING_MODE_SCALE_CROP) {
         int32_t newWidth = mCurrentCrop.width();
         int32_t newHeight = mCurrentCrop.height();
@@ -703,19 +724,83 @@ Rect SurfaceTexture::getCurrentCrop() const {
             outCrop.left, outCrop.top,
             outCrop.right,outCrop.bottom);
     }
+    }
+    else
+    {
+       outCrop = mBufferQueue->getCrop();//todo
+    }
+
+#else
+
+    if (mCurrentScalingMode == NATIVE_WINDOW_SCALING_MODE_SCALE_CROP) {
+        int32_t newWidth = mCurrentCrop.width();
+        int32_t newHeight = mCurrentCrop.height();
+
+        if (newWidth * mDefaultHeight > newHeight * mDefaultWidth) {
+            newWidth = newHeight * mDefaultWidth / mDefaultHeight;
+            ST_LOGV("too wide: newWidth = %d", newWidth);
+        } else if (newWidth * mDefaultHeight < newHeight * mDefaultWidth) {
+            newHeight = newWidth * mDefaultHeight / mDefaultWidth;
+            ST_LOGV("too tall: newHeight = %d", newHeight);
+        }
+
+        // The crop is too wide
+        if (newWidth < mCurrentCrop.width()) {
+            int32_t dw = (newWidth - mCurrentCrop.width())/2;
+            outCrop.left -=dw;
+            outCrop.right += dw;
+        // The crop is too tall
+        } else if (newHeight < mCurrentCrop.height()) {
+            int32_t dh = (newHeight - mCurrentCrop.height())/2;
+            outCrop.top -= dh;
+            outCrop.bottom += dh;
+        }
+
+        ST_LOGV("getCurrentCrop final crop [%d,%d,%d,%d]",
+            outCrop.left, outCrop.top,
+            outCrop.right,outCrop.bottom);
+#endif
+
 
     return outCrop;
 }
 
 uint32_t SurfaceTexture::getCurrentTransform() const {
     Mutex::Autolock lock(mMutex);
+#ifdef ALLWINNER
+    if(mTransformExternal == false)
+    {
+        return mCurrentTransform;
+    }
+    else
+    {
+        return mBufferQueue->getCurrentTransform();//todo
+    }
+#else
+
     return mCurrentTransform;
+
+#endif
 }
 
+#ifdef ALLWINNER
+uint32_t SurfaceTexture::getCurrentScalingMode() const {
+     Mutex::Autolock lock(mMutex);
+    if(mTransformExternal == false)
+    {
+     return mCurrentScalingMode;
+ }
+    else
+    {
+        return mBufferQueue->getCurrentScalingMode();//todo
+    }
+}
+#else
 uint32_t SurfaceTexture::getCurrentScalingMode() const {
     Mutex::Autolock lock(mMutex);
     return mCurrentScalingMode;
 }
+#endif
 
 bool SurfaceTexture::isSynchronousMode() const {
     Mutex::Autolock lock(mMutex);
@@ -754,6 +839,21 @@ void SurfaceTexture::abandon() {
         mBufferQueue.clear();
     }
 }
+
+#ifdef ALLWINNER
+status_t SurfaceTexture::setCrop(const Rect& crop) {
+    ST_LOGV("setCrop: crop=[%d,%d,%d,%d]", crop.left, crop.top, crop.right,
+            crop.bottom);
+
+    Mutex::Autolock lock(mMutex);
+    if (mAbandoned) {
+        ST_LOGE("setCrop: SurfaceTexture has been abandoned!");
+        return NO_INIT;
+    }
+    mCurrentCrop = crop;
+    return OK;
+}
+#endif
 
 void SurfaceTexture::setName(const String8& name) {
     Mutex::Autolock _l(mMutex);

@@ -33,6 +33,11 @@
 #include "HWComposer.h"
 #include "PowerHAL.h"
 
+#ifdef ALLWINNER
+#include "DisplayDispatcher.h"
+#include <ui/DisplayCommand.h>
+#endif
+
 namespace android {
 
 class FramebufferNativeWindow;
@@ -103,12 +108,20 @@ public:
     // Hardware Composer
     HWComposer& getHwComposer() const;
 
+#ifdef ALLWINNER
+    sp<DisplayDispatcher>  mDisplayDispatcher;
+#endif
     status_t compositionComplete() const;
 
     Rect getBounds() const {
         return Rect(mWidth, mHeight);
     }
     inline Rect bounds() const { return getBounds(); }
+
+#ifdef ALLWINNER
+    int setDispProp(int cmd,int param0,int param1,int param2) const;
+    int getDispProp(int cmd,int param0,int param1) const;
+#endif
 
 private:
     virtual void onVSyncReceived(int dpy, nsecs_t timestamp);

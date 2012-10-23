@@ -37,6 +37,10 @@
 #include <gui/ISurfaceComposer.h>
 #include <gui/ISurfaceComposerClient.h>
 
+#ifdef ALLWINNER
+#include <gui/ISurfaceClient.h>
+#endif
+
 #include "Barrier.h"
 #include "Layer.h"
 
@@ -182,6 +186,14 @@ public:
     virtual bool                        authenticateSurfaceTexture(const sp<ISurfaceTexture>& surface) const;
     virtual sp<IDisplayEventConnection> createDisplayEventConnection();
 
+#ifdef ALLWINNER
+    virtual int                         setDisplayProp(int cmd,int param0,int param1,int param2);
+    virtual int                         getDisplayProp(int cmd,int param0,int param1);
+    virtual void                        registerClient(const sp<ISurfaceClient>& client);
+    virtual void                        NotifyFramebufferChanged_l(int event, int param = 0);
+    virtual void                        NotifyFBConverted_l(unsigned int addr1,unsigned int addr2,int bufid,int64_t proctime);
+#endif
+
     virtual status_t captureScreen(DisplayID dpy,
             sp<IMemoryHeap>* heap,
             uint32_t* width, uint32_t* height,
@@ -228,6 +240,12 @@ public:
     // 0: surface doesn't need dithering, 1: use if necessary, 2: use permanently
     inline int  getUseDithering() const { return mUseDithering; }
 
+#ifdef ALLWINNER
+    int         setDisplayParameter(uint32_t cmd,uint32_t  value);
+    uint32_t    getDisplayParameter(uint32_t cmd);
+    void        removeNotificationClient(pid_t pid);
+#endif
+
 
     class MessageDestroyGLTexture : public MessageBase {
         GLuint texture;
@@ -250,6 +268,29 @@ private:
     friend class LayerBase;
     friend class LayerBaseClient;
     friend class Layer;
+
+#ifdef ALLWINNER
+    // --- Notification Client ---
+    class NotificationClient : public IBinder::DeathRecipient 
+    {
+        public:
+            NotificationClient(const sp<SurfaceFlinger>& audioFlinger,
+                                     const sp<ISurfaceClient>& client,
+                                     pid_t pid);
+            virtual             ~NotificationClient();
+            sp<ISurfaceClient>    client() { return mClient; }
+            // IBinder::DeathRecipient
+            virtual     void        binderDied(const wp<IBinder>& who);
+
+        private:
+            NotificationClient(const NotificationClient&);
+            NotificationClient& operator = (const NotificationClient&);
+
+            sp<SurfaceFlinger>          mSurfaceFlinger;
+            pid_t                       mPid;
+            sp<ISurfaceClient>          mClient;
+    };
+#endif
 
     sp<ISurface> createSurface(
             ISurfaceComposerClient::surface_data_t* params,
@@ -391,6 +432,9 @@ private:
 
                 // access must be protected by mInvalidateLock
     mutable     Mutex                       mInvalidateLock;
+#ifdef ALLWINNER
+    mutable     Mutex                       mClientLock;
+#endif
                 Region                      mInvalidateRegion;
 
                 // constant members (no synchronization needed for access)
@@ -412,6 +456,9 @@ private:
                 bool                        mHwWorkListDirty;
                 int32_t                     mElectronBeamAnimationMode;
                 Vector< sp<LayerBase> >     mVisibleLayersSortedByZ;
+#ifdef ALLWINNER
+                DefaultKeyedVector< pid_t, sp<NotificationClient> >    mNotificationClients;
+#endif
 
 
                 // don't use a lock for these, we don't care
@@ -436,6 +483,11 @@ private:
    // only written in the main thread, only read in other threads
    volatile     int32_t                     mSecureFrameBuffer;
                 int                         mUseDithering;
+#ifdef ALLWINNER
+                int                         mDispWidth;
+                int                         mDispHeight;
+                int                         mSetDispSize;
+#endif
 #if defined(BOARD_USES_SAMSUNG_HDMI) && defined(SAMSUNG_EXYNOS5250)
     SecHdmiClient *                         mHdmiClient;
 #endif
