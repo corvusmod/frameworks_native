@@ -16,7 +16,7 @@
 #include "DisplaySemaphore.h"
 #include "DisplayDispatcher.h"
 #include <ui/DisplayCommand.h>
-#include "SurfaceFlinger.h"
+#include <SurfaceFlinger.h>
 
 
 #define INDENT "  "

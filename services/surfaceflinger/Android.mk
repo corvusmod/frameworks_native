@@ -22,9 +22,14 @@ LOCAL_SRC_FILES:= \
     Transform.cpp                           
 
 ifeq ($(TARGET_BOARD_PLATFORM),exDroid)
-LOCAL_SRC_FILES:= \
+LOCAL_SRC_FILES+= \
     DisplayHardware/DisplayDispatcher.cpp   \
     DisplayHardware/DisplaySemaphore.cpp   
+
+LOCAL_C_INCLUDES += \
+    frameworks/native/libs \
+    frameworks/native/services/surfaceflinger 
+
 endif
 
 LOCAL_CFLAGS:= -DLOG_TAG=\"SurfaceFlinger\"
