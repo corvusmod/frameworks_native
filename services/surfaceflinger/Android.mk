@@ -1,10 +1,6 @@
 LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
 
-ifeq ($(TARGET_BOARD_PLATFORM),exDroid)
-LOCAL_CFLAGS += -DALLWINNER
-endif
-
 LOCAL_SRC_FILES:= \
     EventThread.cpp                         \
     Layer.cpp                               \
@@ -23,13 +19,15 @@ LOCAL_SRC_FILES:= \
 
 ifeq ($(TARGET_BOARD_PLATFORM),exDroid)
 LOCAL_SRC_FILES+= \
-    DisplayHardware/DisplayDispatcher.cpp   \
-    DisplayHardware/DisplaySemaphore.cpp
+    DisplayHardware/DisplaySemaphore.cpp \
+    DisplayHardware/DisplayDispatcher.cpp   
 endif
-
 
 LOCAL_CFLAGS:= -DLOG_TAG=\"SurfaceFlinger\"
 LOCAL_CFLAGS += -DGL_GLEXT_PROTOTYPES -DEGL_EGLEXT_PROTOTYPES
+ifeq ($(TARGET_BOARD_PLATFORM),exDroid)
+LOCAL_CFLAGS += -DALLWINNER
+endif
 
 ifeq ($(TARGET_BOARD_PLATFORM), omap4)
 	LOCAL_CFLAGS += -DHAS_CONTEXT_PRIORITY

@@ -347,10 +347,10 @@ void Layer::setPerFrameData(hwc_layer_t* hwcl) {
     } else {
         hwcl->handle = buffer->handle;
     }
-}
 #ifdef ALLWINNER
-hwcl->format = texture_format;
+    hwcl->format = texture_format;
 #endif
+}
 void Layer::onDraw(const Region& clip) const
 {
     ATRACE_CALL();

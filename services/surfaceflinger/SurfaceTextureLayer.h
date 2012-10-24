@@ -56,8 +56,8 @@ public:
     ~SurfaceTextureLayer();
 
     virtual status_t connect(int api, QueueBufferOutput* output);
-#endif
 };
+#endif
 
 // ---------------------------------------------------------------------------
 }; // namespace android

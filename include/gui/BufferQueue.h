@@ -184,7 +184,7 @@ public:
     // connected to the specified client API.
     virtual status_t disconnect(int api);
 
-#indef ALLWINNER
+#ifdef ALLWINNER
 
     virtual bool     IsHardwareRenderSupport();
     virtual int      setParameter(uint32_t cmd,uint32_t value);
