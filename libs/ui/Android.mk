@@ -15,10 +15,6 @@
 LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
 
-ifeq ($(TARGET_BOARD_PLATFORM),exDroid)
-LOCAL_CFLAGS += -DALLWINNER
-endif
-
 LOCAL_SRC_FILES:= \
 	FramebufferNativeWindow.cpp \
 	GraphicBuffer.cpp \
@@ -34,9 +30,11 @@ LOCAL_SHARED_LIBRARIES := \
 	libhardware
 
 ifeq ($(TARGET_BOARD_PLATFORM),exDroid)
+LOCAL_CFLAGS += -DALLWINNER
 LOCAL_SHARED_LIBRARIES += \
         libhardware_legacy
 endif
+
 ifneq ($(BOARD_FRAMEBUFFER_FORCE_FORMAT),)
 LOCAL_CFLAGS += -DFRAMEBUFFER_FORCE_FORMAT=$(BOARD_FRAMEBUFFER_FORCE_FORMAT)
 endif
