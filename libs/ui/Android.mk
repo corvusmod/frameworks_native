@@ -31,8 +31,12 @@ LOCAL_SHARED_LIBRARIES := \
 
 ifeq ($(TARGET_BOARD_PLATFORM),exDroid)
 LOCAL_CFLAGS += -DALLWINNER
-LOCAL_SHARED_LIBRARIES += \
-        libhardware_legacy
+endif
+
+ifeq ($(TARGET_BOARD_PLATFORM),exDroid)
+LOCAL_SRC_FILES:= \
+	DisplayDispatcher.cpp \
+        DisplaySemaphore.cpp 
 endif
 
 ifneq ($(BOARD_FRAMEBUFFER_FORCE_FORMAT),)

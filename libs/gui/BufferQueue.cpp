@@ -29,7 +29,6 @@
 #include <private/gui/ComposerService.h>
 
 #ifdef ALLWINNER
-#include <hardware/hardware.h>
 #include <hardware/hwcomposer.h>
 #endif
 
@@ -331,6 +330,44 @@ status_t BufferQueue::setBuffersSize(int size) {
     mGraphicBufferAlloc->setGraphicBufferSize(size);
     return NO_ERROR;
 }
+#endif
+
+#ifdef ALLWINNER
+bool BufferQueue::IsHardwareRenderSupport()
+{
+    if(mPixelFormat >= HWC_FORMAT_MINVALUE && mPixelFormat <= HWC_FORMAT_MAXVALUE)
+    {
+        return true;
+    }
+
+    return false;
+}
+
+int BufferQueue::setParameter(uint32_t cmd,uint32_t value)
+{
+    if(cmd == HWC_LAYER_SETINITPARA)
+  {
+    layerinitpara_t  *layer_info;
+    
+    layer_info = (layerinitpara_t  *)value;
+        mPixelFormat = layer_info->format;
+  }
+
+    if(IsHardwareRenderSupport())
+    {
+        return 100;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+uint32_t BufferQueue::getParameter(uint32_t cmd)
+{
+    return 0;
+}
+
 #endif
 
 int BufferQueue::query(int what, int* outValue)
@@ -907,91 +944,6 @@ status_t BufferQueue::disconnect(int api) {
 
     return err;
 }
-
-#ifdef ALLWINNER
-bool BufferQueue::IsHardwareRenderSupport()
-{
-    if(mPixelFormat >= HWC_FORMAT_MINVALUE && mPixelFormat <= HWC_FORMAT_MAXVALUE)
-    {
-        return true;
-    }
-
-    return false;
-}
-
-int BufferQueue::setParameter(uint32_t cmd,uint32_t value)
-{
-    if(cmd == HWC_LAYER_SETINITPARA)
-	{
-		layerinitpara_t  *layer_info;
-		
-		layer_info = (layerinitpara_t  *)value;
-        mPixelFormat = layer_info->format;
-	}
-
-    if(IsHardwareRenderSupport())
-    {
-        return 100;
-    }
-    else
-    {
-        return 0;
-    }
-}
-
-uint32_t BufferQueue::getParameter(uint32_t cmd)
-{
-	if(cmd == NATIVE_WINDOW_CMD_GET_SURFACE_TEXTURE_TYPE) {
-		return 0;
-	}
-    return 0;
-}
-
-
-status_t BufferQueue::setCrop(const Rect& crop) {
-    ST_LOGV("############BufferQueue::setCrop: crop=[%d,%d,%d,%d]", crop.left, crop.top, crop.right,
-            crop.bottom);
-
-    mCurrentCrop = crop;
-    return OK;
-}
-
-Rect BufferQueue::getCrop() {
-    ST_LOGV("setCrop: crop=[%d,%d,%d,%d]", crop.left, crop.top, crop.right,
-            crop.bottom);
-
-    return mCurrentCrop;
-}
-
-status_t BufferQueue::setCurrentTransform(uint32_t transform) {
-    mCurrentTransform = transform;
-    return OK;
-}
-
-uint32_t BufferQueue::getCurrentTransform() {
-    return mCurrentTransform;
-}
-
-status_t BufferQueue::setCurrentScalingMode(int scalingMode) {
-    mCurrentScalingMode = scalingMode;
-    return OK;
-}
-
-int BufferQueue::getCurrentScalingMode() {
-
-    return mCurrentScalingMode;
-}
-
-status_t BufferQueue::setTimestamp(int64_t timestamp) {
-    mCurrentTimestamp = timestamp;
-    return OK;
-}
-
-int64_t BufferQueue::getTimestamp() 
-{
-    return mCurrentTimestamp;
-}
-#endif
 
 void BufferQueue::dump(String8& result) const
 {

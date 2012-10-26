@@ -18,9 +18,6 @@ LOCAL_SRC_FILES:= \
     Transform.cpp                           \
 
 ifeq ($(TARGET_BOARD_PLATFORM),exDroid)
-LOCAL_SRC_FILES+= \
-    DisplayHardware/DisplaySemaphore.cpp \
-    DisplayHardware/DisplayDispatcher.cpp   
 LOCAL_CFLAGS += -DALLWINNER
 endif
 

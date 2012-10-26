@@ -402,6 +402,11 @@ int SurfaceTextureClient::dispatchDisconnect(va_list args) {
     return disconnect(api);
 }
 
+int SurfaceTextureClient::dispatchSetUsage(va_list args) {
+    int usage = va_arg(args, int);
+    return setUsage(usage);
+}
+
 #ifdef ALLWINNER
 int SurfaceTextureClient::dispatchSetParameter(va_list args)
 {
@@ -418,11 +423,6 @@ int SurfaceTextureClient::dispatchGetParameter(va_list args)
     return getParameter((uint32_t)cmd);
 }
 #endif
-
-int SurfaceTextureClient::dispatchSetUsage(va_list args) {
-    int usage = va_arg(args, int);
-    return setUsage(usage);
-}
 
 int SurfaceTextureClient::dispatchSetCrop(va_list args) {
     android_native_rect_t const* rect = va_arg(args, android_native_rect_t*);
@@ -441,20 +441,27 @@ int SurfaceTextureClient::dispatchSetBuffersGeometry(va_list args) {
     int w = va_arg(args, int);
     int h = va_arg(args, int);
     int f = va_arg(args, int);
+#ifdef ALLWINNER
+    int screenid = va_arg(args, int);
+#endif
     int err = setBuffersDimensions(w, h);
     if (err != 0) {
         return err;
     }
 #ifdef ALLWINNER
+    ALOGD("dispatchSetBuffersGeometry1!\n");
     err = setBuffersFormat(f);
     if (err != 0) 
     {
         return err;
     }
+
+    ALOGD("dispatchSetBuffersGeometry2!\n");
     
     layer_info.w       = w;
     layer_info.h       = h;
     layer_info.format     = f;
+    layer_info.screenid    = screenid;
     return setParameter(HWC_LAYER_SETINITPARA,(uint32_t)&layer_info);
 #else
     return setBuffersFormat(f);
@@ -560,7 +567,7 @@ int SurfaceTextureClient::disconnect(int api) {
 #ifdef ALLWINNER
 int SurfaceTextureClient::setParameter(uint32_t cmd,uint32_t value) 
 {
-    ALOGV("SurfaceTextureClient::setParameter %d,%d",cmd,value);
+    ALOGV("SurfaceTextureClient::setParameter");
     
     return mSurfaceTexture->setParameter(cmd,value);
 }
@@ -617,9 +624,6 @@ int SurfaceTextureClient::setCrop(Rect const* rect)
 
     Mutex::Autolock lock(mMutex);
     mCrop = realRect;
-#ifdef ALLWINNER
-    status_t err = mSurfaceTexture->setCrop(*rect);
-#endif
     return NO_ERROR;
 }
 
@@ -654,9 +658,6 @@ int SurfaceTextureClient::setBuffersDimensions(int w, int h)
     Mutex::Autolock lock(mMutex);
     mReqWidth = w;
     mReqHeight = h;
-#ifdef ALLWINNER
-    status_t err = mSurfaceTexture->setCrop(Rect(w, h));
-#endif
     return NO_ERROR;
 }
 
@@ -737,9 +738,6 @@ int SurfaceTextureClient::setScalingMode(int mode)
 
     Mutex::Autolock lock(mMutex);
     mScalingMode = mode;
-#ifdef ALLWINNER
-    status_t err = mSurfaceTexture->setCurrentScalingMode(mode);
-#endif
     return NO_ERROR;
 }
 
@@ -749,9 +747,6 @@ int SurfaceTextureClient::setBuffersTransform(int transform)
     ALOGV("SurfaceTextureClient::setBuffersTransform");
     Mutex::Autolock lock(mMutex);
     mTransform = transform;
-#ifdef ALLWINNER
-    status_t err = mSurfaceTexture->setCurrentTransform(transform);
-#endif
     return NO_ERROR;
 }
 
@@ -760,9 +755,6 @@ int SurfaceTextureClient::setBuffersTimestamp(int64_t timestamp)
     ALOGV("SurfaceTextureClient::setBuffersTimestamp");
     Mutex::Autolock lock(mMutex);
     mTimestamp = timestamp;
-#ifdef ALLWINNER
-    status_t err = mSurfaceTexture->setTimestamp(timestamp);
-#endif
     return NO_ERROR;
 }
 
