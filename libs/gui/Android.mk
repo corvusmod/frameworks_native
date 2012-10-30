@@ -1,6 +1,10 @@
 LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
 
+ifeq ($(TARGET_BOARD_PLATFORM),exDroid)
+LOCAL_CFLAGS += -DALLWINNER
+endif
+
 LOCAL_SRC_FILES:= \
 	BitTube.cpp \
 	BufferQueue.cpp \
@@ -49,10 +53,6 @@ endif
 
 ifeq ($(TARGET_BOARD_PLATFORM), tegra)
 	LOCAL_CFLAGS += -DALLOW_DEQUEUE_CURRENT_BUFFER
-endif
-
-ifeq ($(TARGET_BOARD_PLATFORM),exDroid)
-LOCAL_CFLAGS += -DALLWINNER
 endif
 
 ifeq ($(BOARD_USES_QCOM_HARDWARE), true)

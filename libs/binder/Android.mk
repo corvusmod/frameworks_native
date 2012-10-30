@@ -45,7 +45,6 @@ LOCAL_PATH:= $(call my-dir)
 # COMMON_GLOBAL_CFLAGS += -DBINDER_COMPAT
 
 include $(CLEAR_VARS)
-
 LOCAL_LDLIBS += -lpthread
 LOCAL_MODULE := libbinder
 LOCAL_SHARED_LIBRARIES := liblog libcutils libutils
