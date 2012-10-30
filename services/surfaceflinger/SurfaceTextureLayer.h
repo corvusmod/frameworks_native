@@ -35,19 +35,16 @@ class SurfaceTextureLayer : public BufferQueue
 {
 
 #ifdef ALLWINNER
-wp<Layer> mLayer;
-uint32_t mDefaultFormat;
+	wp<Layer> mLayer;
+	uint32_t mDefaultFormat;
 #endif
-
 public:
-
+    SurfaceTextureLayer();
+    ~SurfaceTextureLayer();
 #ifdef ALLWINNER
-     SurfaceTextureLayer();
-     ~SurfaceTextureLayer();
- 
-     bool     usehwcomposer;
-     bool     usehwinit;
-     
+	bool     usehwcomposer;
+	bool     usehwinit;
+	
     virtual status_t connect(int api, QueueBufferOutput* output);
 
     virtual status_t disconnect(int api);
@@ -56,9 +53,6 @@ public:
     virtual uint32_t getParameter(uint32_t cmd);
  };
 #else
-    SurfaceTextureLayer();
-    ~SurfaceTextureLayer();
-
     virtual status_t connect(int api, QueueBufferOutput* output);
 };
 #endif

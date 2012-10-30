@@ -246,7 +246,7 @@ hwc_layer_t* HWComposer::getLayers() const {
 int  HWComposer::setParameter(uint32_t cmd,uint32_t value)
 {
     if (mHwc) 
-    {   
+    {
         int err = mHwc->setparameter(mHwc, cmd,value);
         
         return (status_t)err;

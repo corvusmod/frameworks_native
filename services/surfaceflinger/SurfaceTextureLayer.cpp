@@ -20,12 +20,12 @@
 
 #include <utils/Errors.h>
 
+#include "Layer.h"
+#include "SurfaceTextureLayer.h"
+
 #ifdef ALLWINNER
 #include <hardware/hwcomposer.h>
 #endif
-
-#include "Layer.h"
-#include "SurfaceTextureLayer.h"
 
 namespace android {
 // ---------------------------------------------------------------------------
@@ -45,8 +45,8 @@ status_t SurfaceTextureLayer::connect(int api, QueueBufferOutput* output) {
 #ifdef ALLWINNER
             case NATIVE_WINDOW_API_MEDIA_HW:
             case NATIVE_WINDOW_API_CAMERA_HW:
-            usehwcomposer = true;
-            break;
+            	usehwcomposer = true;
+            	break;
 #endif
             case NATIVE_WINDOW_API_MEDIA:
             case NATIVE_WINDOW_API_CAMERA:
@@ -78,7 +78,7 @@ status_t SurfaceTextureLayer::disconnect(int api)
 
     switch (api) 
     {
-    case NATIVE_WINDOW_API_MEDIA_HW:
+		case NATIVE_WINDOW_API_MEDIA_HW:
         case NATIVE_WINDOW_API_CAMERA_HW:
         {
             sp<Layer> layer(mLayer.promote());
@@ -99,28 +99,29 @@ int SurfaceTextureLayer::setParameter(uint32_t cmd,uint32_t value)
 {
     int res = 0;
 
-  BufferQueue::setParameter(cmd,value);
-  
+	BufferQueue::setParameter(cmd,value);
+	
     sp<Layer> layer(mLayer.promote());
     if (layer != NULL) 
     {
-      if(cmd == HWC_LAYER_SETINITPARA)
-      {
-        layerinitpara_t  *layer_info;
-        
-        layer_info = (layerinitpara_t  *)value;
+	    	if(cmd == HWC_LAYER_SETINITPARA)
+	    	{
+	    		layerinitpara_t  *layer_info;
+	    		
+	    		layer_info = (layerinitpara_t  *)value;
 
-            if(IsHardwareRenderSupport())
+                if(IsHardwareRenderSupport())
+                {
+	    		    layer->setTextureInfo(layer_info->w,layer_info->h,layer_info->format);
+
+                    usehwinit = true;
+                }
+	    	}
+
+            if(usehwinit == true)
             {
-		layer->setTextureInfo(layer_info->w,layer_info->h,layer_info->format);
-                usehwinit = true;
+            	res = layer->setDisplayParameter(cmd,value);
             }
-      }
-
-        if(usehwinit == true)
-        {
-          res = layer->setDisplayParameter(cmd,value);
-        }
     }
     
     return res;

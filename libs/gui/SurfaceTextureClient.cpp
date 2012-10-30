@@ -23,6 +23,9 @@
 #include <utils/Log.h>
 #include <utils/Trace.h>
 
+#ifdef ALLWINNER
+#include <hardware/hwcomposer.h>
+#endif
 #include <gui/ISurfaceComposer.h>
 #include <gui/SurfaceComposerClient.h>
 #include <gui/SurfaceTexture.h>
@@ -31,10 +34,6 @@
 #include <private/gui/ComposerService.h>
 #ifdef QCOM_HARDWARE
 #include <gralloc_priv.h>
-#endif
-
-#ifdef ALLWINNER
-#include <hardware/hwcomposer.h>
 #endif
 
 namespace android {
@@ -380,7 +379,6 @@ int SurfaceTextureClient::perform(int operation, va_list args)
     case NATIVE_WINDOW_SETPARAMETER:
         res = dispatchSetParameter(args);
         break;
-
     case NATIVE_WINDOW_GETPARAMETER:
         res = dispatchGetParameter(args);
         break; 
@@ -458,10 +456,10 @@ int SurfaceTextureClient::dispatchSetBuffersGeometry(va_list args) {
 
     ALOGD("dispatchSetBuffersGeometry2!\n");
     
-    layer_info.w       = w;
-    layer_info.h       = h;
-    layer_info.format     = f;
-    layer_info.screenid    = screenid;
+    layer_info.w 			= w;
+    layer_info.h 			= h;
+    layer_info.format 		= f;
+    layer_info.screenid		= screenid;
     return setParameter(HWC_LAYER_SETINITPARA,(uint32_t)&layer_info);
 #else
     return setBuffersFormat(f);

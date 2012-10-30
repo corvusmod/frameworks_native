@@ -52,7 +52,7 @@ ifeq ($(TARGET_BOARD_PLATFORM), tegra)
 endif
 
 ifeq ($(TARGET_BOARD_PLATFORM),exDroid)
-LOCAL_CFLAGS += -DALLWINNER
+	LOCAL_CFLAGS += -DALLWINNER
 endif
 
 ifeq ($(BOARD_USES_QCOM_HARDWARE), true)

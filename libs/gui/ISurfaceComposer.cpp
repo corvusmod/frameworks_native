@@ -304,7 +304,6 @@ status_t BnSurfaceComposer::onTransact(
             reply->writeStrongBinder(connection->asBinder());
             return NO_ERROR;
         } break;
-
 #ifdef ALLWINNER
         case SET_DISPLAYPROP:
         {
@@ -315,9 +314,7 @@ status_t BnSurfaceComposer::onTransact(
             int     param2  = data.readInt32();
             int res = setDisplayProp(cmd,param0,param1,param2);
             reply->writeInt32(res);
-        }
-            break;
-            
+        } break;
         case GET_DISPLAYPROP:
         {
             CHECK_INTERFACE(ISurfaceComposer, data, reply);
@@ -326,9 +323,7 @@ status_t BnSurfaceComposer::onTransact(
             int     param1  = data.readInt32();
             int res = getDisplayProp(cmd,param0,param1);
             reply->writeInt32(res);
-        }
-            break;
-
+        } break;
 #endif
         default:
             return BBinder::onTransact(code, data, reply, flags);

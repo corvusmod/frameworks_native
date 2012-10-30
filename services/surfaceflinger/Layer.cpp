@@ -179,9 +179,9 @@ wp<IBinder> Layer::getSurfaceTextureBinder() const
 #ifdef ALLWINNER
 void Layer::setTextureInfo(int w,int h,int format)
 {
-    texture_srcw   = w;
-    texture_srch   = h;
-    texture_format   = format;
+    texture_srcw 	= w;
+    texture_srch 	= h;
+    texture_format 	= format;
     mCurrentCrop    = Rect(w,h);
 }
 #endif
@@ -343,6 +343,7 @@ void Layer::setPerFrameData(hwc_layer_t* hwcl) {
     ALOGV("hwcl->format = %d\n",texture_format);
 #endif
 }
+
 void Layer::onDraw(const Region& clip) const
 {
     ATRACE_CALL();
@@ -552,8 +553,8 @@ bool Layer::onPreComposition() {
 void Layer::lockPageFlip(bool& recomputeVisibleRegions)
 {
     ATRACE_CALL();
-    if (mQueuedFrames > 0) {
 
+    if (mQueuedFrames > 0) {
 
         // if we've already called updateTexImage() without going through
         // a composition step, we have to skip this layer at this point
@@ -692,6 +693,7 @@ void Layer::lockPageFlip(bool& recomputeVisibleRegions)
             mCurrentScalingMode = scalingMode;
             mFlinger->invalidateHwcGeometry();
         }
+
         if (oldActiveBuffer != NULL) {
             uint32_t bufWidth  = mActiveBuffer->getWidth();
             uint32_t bufHeight = mActiveBuffer->getHeight();

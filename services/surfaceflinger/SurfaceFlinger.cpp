@@ -1295,6 +1295,7 @@ void SurfaceFlinger::setTransactionState(const Vector<ComposerState>& state,
         }
     }
 }
+
 #ifdef ALLWINNER
 int SurfaceFlinger::setDisplayProp(int cmd,int param0,int param1,int param2)
 {
