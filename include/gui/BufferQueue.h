@@ -24,6 +24,7 @@
 #include <gui/ISurfaceTexture.h>
 
 #include <ui/GraphicBuffer.h>
+#include <ui/Rect.h>
 
 #include <utils/String8.h>
 #include <utils/Vector.h>

@@ -3,6 +3,7 @@ include $(CLEAR_VARS)
 
 ifeq ($(TARGET_BOARD_PLATFORM),exDroid)
 LOCAL_CFLAGS += -DALLWINNER
+LOCAL_C_INCLUDES += frameworks/native/include
 endif
 
 LOCAL_SRC_FILES:= \

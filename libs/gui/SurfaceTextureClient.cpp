@@ -33,6 +33,7 @@
 #include <gralloc_priv.h>
 #endif
 
+#include <ui/GraphicBuffer.h>
 #ifdef ALLWINNER
 #include <hardware/hwcomposer.h>
 #endif
