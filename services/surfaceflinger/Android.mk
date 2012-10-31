@@ -18,7 +18,7 @@ LOCAL_SRC_FILES:= \
     Transform.cpp                           \
 
 ifeq ($(TARGET_BOARD_PLATFORM),exDroid)
-LOCAL_CFLAGS += -DALLWINNER
+	LOCAL_CFLAGS += -DALLWINNER
 endif
 
 LOCAL_CFLAGS:= -DLOG_TAG=\"SurfaceFlinger\"

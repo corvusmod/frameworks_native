@@ -287,6 +287,7 @@ protected:
 public:
     // called from class SurfaceFlinger
     virtual ~LayerBase();
+
 private:
     LayerBase(const LayerBase& rhs);
 };

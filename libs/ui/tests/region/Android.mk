@@ -7,7 +7,7 @@ LOCAL_SRC_FILES:= \
 LOCAL_SHARED_LIBRARIES := \
 	libcutils \
 	libutils \
-        libui
+    libui
 
 LOCAL_MODULE:= test-region
 

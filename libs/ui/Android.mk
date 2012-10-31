@@ -31,12 +31,10 @@ LOCAL_SHARED_LIBRARIES := \
 	libhardware
 
 ifeq ($(TARGET_BOARD_PLATFORM),exDroid)
-LOCAL_CFLAGS += -DALLWINNER
-endif
+	LOCAL_CFLAGS += -DALLWINNER
 
-ifeq ($(TARGET_BOARD_PLATFORM),exDroid)
-LOCAL_SRC_FILES:= \
-	DisplayDispatcher.cpp \
+	LOCAL_SRC_FILES:= \
+		DisplayDispatcher.cpp \
         DisplaySemaphore.cpp 
 endif
 ifneq ($(BOARD_FRAMEBUFFER_FORCE_FORMAT),)

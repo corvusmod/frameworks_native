@@ -218,12 +218,13 @@ public:
         data.writeInt32(cmd);
         if(cmd == HWC_LAYER_SETINITPARA)
         {
-        layerinitpara_t  *layer_info = (layerinitpara_t  *)value;
-          ALOGD("layer_info.w = %d\n",layer_info->w);
-          ALOGD("layer_info.h = %d\n",layer_info->h);
-          ALOGD("layer_info.format = %d\n",layer_info->format);
-          ALOGD("layer_info.screenid = %d\n",layer_info->screenid);
-          data.write((void *)value,sizeof(layerinitpara_t));
+        	layerinitpara_t  *layer_info = (layerinitpara_t  *)value;
+        	ALOGD("layer_info.w = %d\n",layer_info->w);
+        	ALOGD("layer_info.h = %d\n",layer_info->h);
+        	ALOGD("layer_info.format = %d\n",layer_info->format);
+        	ALOGD("layer_info.screenid = %d\n",layer_info->screenid);
+	        	
+        	data.write((void *)value,sizeof(layerinitpara_t));
         }
         else if(cmd == HWC_LAYER_SETFRAMEPARA)
         {
@@ -371,9 +372,8 @@ status_t BnSurfaceTexture::onTransact(
             reply->writeInt32(res);
             return NO_ERROR;
         } break;
-
 #ifdef ALLWINNER
-    case SET_PARAMETER: {
+		case SET_PARAMETER: {
             CHECK_INTERFACE(ISurfaceTexture, data, reply);
             uint32_t cmd    = (uint32_t)data.readInt32();
             uint32_t value;
@@ -384,10 +384,11 @@ status_t BnSurfaceTexture::onTransact(
 	        	data.read((void *)&layer_info,sizeof(layerinitpara_t));
 	        	
 	        	value = (uint32_t)&layer_info;
-			ALOGD("layer_info.w = %d\n",layer_info.w);
-            		ALOGD("layer_info.h = %d\n",layer_info.h);
-		        ALOGD("layer_info.format = %d\n",layer_info.format);
-		        ALOGD("layer_info.screenid = %d\n",layer_info.screenid);
+	        	
+	        	ALOGD("layer_info.w = %d\n",layer_info.w);
+	        	ALOGD("layer_info.h = %d\n",layer_info.h);
+	        	ALOGD("layer_info.format = %d\n",layer_info.format);
+	        	ALOGD("layer_info.screenid = %d\n",layer_info.screenid);
 	        }
 	        else if(cmd == HWC_LAYER_SETFRAMEPARA)
 	        {

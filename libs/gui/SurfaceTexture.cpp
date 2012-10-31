@@ -705,7 +705,7 @@ Rect SurfaceTexture::getCurrentCrop() const {
         ST_LOGV("getCurrentCrop final crop [%d,%d,%d,%d]",
             outCrop.left, outCrop.top,
             outCrop.right,outCrop.bottom);
-	}
+    }
 
     return outCrop;
 }

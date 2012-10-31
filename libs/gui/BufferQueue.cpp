@@ -28,13 +28,14 @@
 #include <gui/ISurfaceComposer.h>
 #include <private/gui/ComposerService.h>
 
+#include <utils/Log.h>
+#include <gui/SurfaceTexture.h>
+#include <utils/Trace.h>
+
 #ifdef ALLWINNER
 #include <hardware/hwcomposer.h>
 #endif
 
-#include <utils/Log.h>
-#include <gui/SurfaceTexture.h>
-#include <utils/Trace.h>
 #ifdef QCOM_HARDWARE
 #include <gralloc_priv.h>
 #endif // QCOM_HARDWARE
@@ -346,12 +347,12 @@ bool BufferQueue::IsHardwareRenderSupport()
 int BufferQueue::setParameter(uint32_t cmd,uint32_t value)
 {
     if(cmd == HWC_LAYER_SETINITPARA)
-  {
-    layerinitpara_t  *layer_info;
-    
-    layer_info = (layerinitpara_t  *)value;
+	{
+		layerinitpara_t  *layer_info;
+		
+		layer_info = (layerinitpara_t  *)value;
         mPixelFormat = layer_info->format;
-  }
+	}
 
     if(IsHardwareRenderSupport())
     {
@@ -869,8 +870,8 @@ status_t BufferQueue::connect(int api, QueueBufferOutput* output) {
         case NATIVE_WINDOW_API_MEDIA:
         case NATIVE_WINDOW_API_CAMERA:
 #ifdef ALLWINNER
-       	case NATIVE_WINDOW_API_MEDIA_HW:
-        case NATIVE_WINDOW_API_CAMERA_HW:
+		case NATIVE_WINDOW_API_MEDIA_HW:
+		case NATIVE_WINDOW_API_CAMERA_HW:
 #endif
             if (mConnectedApi != NO_CONNECTED_API) {
                 ST_LOGE("connect: already connected (cur=%d, req=%d)",

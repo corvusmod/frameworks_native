@@ -413,8 +413,6 @@ typedef struct OMX_PARAM_COMPONENTROLETYPE {
 #define OMX_BUFFERFLAG_VENDOR_SEEK_SYNC 0x00010000
 #endif
 
-
-
 /** @ingroup buf */
 typedef struct OMX_BUFFERHEADERTYPE
 {

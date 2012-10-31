@@ -238,6 +238,7 @@ public:
     // 0: surface doesn't need dithering, 1: use if necessary, 2: use permanently
     inline int  getUseDithering() const { return mUseDithering; }
 
+
     class MessageDestroyGLTexture : public MessageBase {
         GLuint texture;
     public:

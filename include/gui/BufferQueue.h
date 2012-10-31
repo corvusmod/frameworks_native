@@ -205,8 +205,8 @@ public:
            mTimestamp(0),
            mFrameNumber(0),
            mBuf(INVALID_BUFFER_SLOT) {
-           mCrop.makeInvalid();
-         }
+	           mCrop.makeInvalid();
+	         }
         // mGraphicBuffer points to the buffer allocated for this slot or is NULL
         // if no buffer has been allocated.
         sp<GraphicBuffer> mGraphicBuffer;
@@ -229,7 +229,7 @@ public:
 
         // mBuf is the slot index of this buffer
         int mBuf;
-   };
+	};
 
     // The following public functions is the consumer facing interface
 
