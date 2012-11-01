@@ -33,7 +33,7 @@ LOCAL_SHARED_LIBRARIES := \
 ifeq ($(TARGET_BOARD_PLATFORM),exDroid)
 	LOCAL_CFLAGS += -DALLWINNER
 
-	LOCAL_SRC_FILES:= \
+	LOCAL_SRC_FILES+= \
 		DisplayDispatcher.cpp \
         DisplaySemaphore.cpp 
 endif
